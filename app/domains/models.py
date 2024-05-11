@@ -36,6 +36,8 @@ class User(Base):
         onupdate=func.now(),
     )
 
+    messages = relationship("Message", back_populates="user")
+    rooms = relationship("RoomMember", back_populates="user")
 
 class Emotion(enum.Enum):
     HAPPY = "happy"
@@ -87,7 +89,7 @@ class RoomMember(Base):
     UniqueConstraint("room_uuid", "user_uuid")
 
     room = relationship("Room", back_populates="members")
-
+    user = relationship("User", back_populates="rooms")
 
 class Message(Base):
     __tablename__ = "messages"
@@ -108,3 +110,4 @@ class Message(Base):
     )
 
     room = relationship("Room", back_populates="messages")
+    user = relationship("User", back_populates="messages")
