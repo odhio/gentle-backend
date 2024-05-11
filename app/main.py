@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import logging
 import time
-from routes import audio, generate, auth
+from routes import audio, generate, auth, users
 
 logging.basicConfig(level=logging.INFO)
 
@@ -31,6 +31,7 @@ app.add_middleware(
 app.include_router(audio.router, prefix="/api/audio", tags=["audio"])
 app.include_router(generate.router, prefix="/api/generate", tags=["generate"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(users.router, prefix="/api/users", tags=["users"])
 
 
 def main():

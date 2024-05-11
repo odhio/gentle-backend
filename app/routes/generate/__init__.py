@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import traceback
-from .phi import predict, Message
+from . import phi
 
 router = APIRouter()
 
@@ -10,11 +10,10 @@ class GenerateResponse(BaseModel):
     content: str
 
 
-@router.post("/", response_model=GenerateResponse)
-def _generate(req: list[Message]):
+@router.post("/", response_model=phi.GenerateResponse)
+def _generate(req: phi.GenerateRequest):
     try:
-        res = predict(req)
-        return GenerateResponse(content=res)
+        return phi.handler(req)
     except Exception as e:
         print(traceback.format_exc())
         print(e)
