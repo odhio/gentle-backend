@@ -6,7 +6,9 @@ __token_key = "access_token"
 
 
 class Token(BaseModel):
-    id: str
+    uuid: str
+    name: str
+    image: str
 
 
 def get_token(req: Request) -> Optional[Token]:
