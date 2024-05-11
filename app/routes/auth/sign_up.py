@@ -19,5 +19,6 @@ async def handler(req: SignUpRequest, res: Response):
         set_token(res, Token(id=req.id))
         return SignUpResponse(success=True)
     except Exception as e:
-        traceback.print_exc(e)
+        print(traceback.format_exc())
+        print(e)
         return SignUpResponse(success=False)

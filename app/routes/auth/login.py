@@ -17,5 +17,6 @@ async def handler(req: LoginRequest, res: Response):
         set_token(res, Token(id=req.id))
         return LoginResponse(success=True)
     except Exception as e:
-        traceback.print_exc(e)
+        print(traceback.format_exc())
+        print(e)
         return LoginResponse(success=False)

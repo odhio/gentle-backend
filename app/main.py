@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import logging
 import time
-from routes import audio, generate
+from routes import audio, generate, auth
 
 logging.basicConfig(level=logging.INFO)
 
@@ -23,13 +23,14 @@ async def add_process_time_header(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins="*",
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_origin_regex=r"^https?://localhost(:\d+)?$",
+    allow_credentials=True,
+    allow_methods=["*"],
     allow_headers=["*"],
 )
-
 app.include_router(audio.router, prefix="/api/audio", tags=["audio"])
 app.include_router(generate.router, prefix="/api/generate", tags=["generate"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 
 
 def main():

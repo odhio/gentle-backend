@@ -13,5 +13,6 @@ async def handler(res: Response):
         delete_token(res)
         return LogoutResponse(success=True)
     except Exception as e:
-        traceback.print_exc(e)
+        print(traceback.format_exc())
+        print(e)
         return LogoutResponse(success=False)
