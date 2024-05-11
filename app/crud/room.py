@@ -1,4 +1,4 @@
-from domains import Room
+from domains import Room, RoomMember
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import select
 from sqlalchemy.orm import joinedload
@@ -15,6 +15,17 @@ async def get_all_rooms(db: AsyncSession):
     query = select(Room)
     result = await db.execute(query)
     return result.scalars().all()
+
+
+async def get_room_by_uuid(db: AsyncSession, room_uuid: str):
+    query = (
+        select(Room)
+        .join(Room.members)
+        .where(Room.uuid == room_uuid)
+        .options(joinedload(Room.members).joinedload(RoomMember.user))
+    )
+    result = await db.execute(query)
+    return result.scalars().first()
 
 
 async def create_room(db: AsyncSession, room_uuid: str, name: str):

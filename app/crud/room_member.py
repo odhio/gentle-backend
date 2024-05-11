@@ -5,7 +5,11 @@ from sqlalchemy.orm import joinedload
 import uuid
 
 async def get_room_members_by_room_uuid(db: AsyncSession, room_uuid: str):
-    query = select(RoomMember).where(RoomMember.room_uuid == room_uuid)
+    query = (
+        select(RoomMember)
+        .where(RoomMember.room_uuid == room_uuid)
+        .options(joinedload(RoomMember.user))
+    )
     result = await db.execute(query)
     return result.scalars().all()
 
