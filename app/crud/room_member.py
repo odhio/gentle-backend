@@ -17,3 +17,10 @@ async def join_room(db: AsyncSession, room_uuid: str, user_uuid: str):
     await db.refresh(room_member)
 
     return room_member
+
+
+async def add_summary(db: AsyncSession, room_member_uuid: str, summary: str):
+    room_member = select(RoomMember).where(RoomMember.uuid == room_member_uuid)
+    room_member.summary = summary
+
+    return room_member

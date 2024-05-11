@@ -24,3 +24,13 @@ async def create_message(
     await db.refresh(message)
 
     return message
+
+
+async def add_message_emotion(db: AsyncSession, message_uuid: str, emotion: Emotion):
+    query = select(Message).where(Message.uuid == message_uuid)
+    message = (await db.execute(query)).scalars().first()
+    message.emotion = emotion
+    await db.flush()
+    await db.refresh(message)
+
+    return message

@@ -37,11 +37,22 @@ class User(Base):
     )
 
 
+class Emotion(enum.Enum):
+    HAPPY = "happy"
+    SAD = "sad"
+    ANGER = "anger"
+    FEAR = "fear"
+    DISGUST = "disgust"
+    NEUTRAL = "neutral"
+
+
 class Room(Base):
     __tablename__ = "rooms"
 
     uuid = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    emotion = Column(Enum(Emotion), default=Emotion.NEUTRAL, nullable=False)
+    summary = Column(Text, default="", nullable=False)
     created_at = Column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -54,7 +65,7 @@ class Room(Base):
     closed_at = Column(DateTime(timezone=True), nullable=True)
 
     members = relationship("RoomMember", back_populates="room")
-    messages = relationship("RoomMessage", back_populates="room")
+    messages = relationship("Message", back_populates="room")
 
 
 class RoomMember(Base):
@@ -63,6 +74,7 @@ class RoomMember(Base):
     uuid = Column(String, primary_key=True, index=True)
     room_uuid = Column(String, ForeignKey("rooms.uuid"), nullable=False)
     user_uuid = Column(String, ForeignKey("users.uuid"), nullable=False)
+    summary = Column(Text, default="", nullable=False)
     created_at = Column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -77,15 +89,6 @@ class RoomMember(Base):
     room = relationship("Room", back_populates="members")
 
 
-class Emotion(enum.Enum):
-    HAPPY = "happy"
-    SAD = "sad"
-    ANGER = "anger"
-    FEAR = "fear"
-    DISGUST = "disgust"
-    NEUTRAL = "neutral"
-
-
 class Message(Base):
     __tablename__ = "messages"
 
@@ -93,7 +96,7 @@ class Message(Base):
     room_uuid = Column(String, ForeignKey("rooms.uuid"), nullable=False)
     user_uuid = Column(String, ForeignKey("users.uuid"), nullable=False)
     message = Column(Text, nullable=False)
-    emotion = Column(Emotion, nullable=False)
+    emotion = Column(Enum(Emotion), nullable=False)
     created_at = Column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
