@@ -1,5 +1,6 @@
 from typing import Literal, Union
 from pydantic import BaseModel
+from schema import APIBaseModel
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
@@ -31,14 +32,22 @@ class Message(BaseModel):
     content: str
 
 
-def predict(messages: Union[list[dict[str, str]], list[Message]]) -> str:
+class GenerateRequest(BaseModel):
+    messages: list[Message]
+
+
+class GenerateResponse(APIBaseModel):
+    content: str
+
+
+def handler(req: GenerateRequest) -> str:
     _messages = []
-    for message in messages:
+    for message in req.messages:
         if isinstance(message, dict):
-            m = Message.model_validate(message)
-            _messages.append(m.model_dump())
+            m = Message(**message)
+            _messages.append(m.dict())
         else:
-            _messages.append(message.model_dump())
+            _messages.append(message.dict())  # 同様にdict()を使用
 
     res = _pipe(_messages, **_generation_args)
-    return res[0]["generated_text"]
+    return GenerateResponse(content=res[0]["generated_text"])

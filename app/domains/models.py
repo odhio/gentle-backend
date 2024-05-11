@@ -25,6 +25,7 @@ class User(Base):
 
     uuid = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    image = Column(String, nullable=False)
     created_at = Column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

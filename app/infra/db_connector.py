@@ -1,9 +1,10 @@
 import os
-from config import Env
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+load_dotenv(dotenv_path="./env/.env")
 
 __DB_DIALECT = "postgresql"
 __DB_USER = os.environ.get("POSTGRES_USER")
@@ -13,6 +14,7 @@ __DB_NAME = os.environ.get("POSTGRES_DATABASE")
 __DB_CONTAINER_NAME = os.environ.get("DB_CONTAINER_NAME")
 
 DATABASE_URL = f"{__DB_DIALECT}://{__DB_USER}:{__DB_PASSWD}@{__DB_CONTAINER_NAME}:{__DB_PORT}/{__DB_NAME}"
+print(DATABASE_URL)
 engine = create_engine(DATABASE_URL)
 
 async_engine = create_async_engine(
