@@ -7,6 +7,8 @@ from datetime import datetime
 class Room(APIBaseModel):
     uuid: str
     name: str
+    emotion: str | None
+    summary: str | None
     closed_at: datetime | None
 
 
@@ -18,7 +20,13 @@ async def handler(session: AsyncSession) -> GetAllRoomsResponse:
     rooms = await get_all_rooms(session)
     return GetAllRoomsResponse(
         rooms=[
-            Room(uuid=room.uuid, name=room.name, closed_at=room.closed_at)
+            Room(
+                uuid=room.uuid,
+                name=room.name,
+                emotion=room.emotion,
+                summary=room.summary,
+                closed_at=room.closed_at,
+            )
             for room in rooms
         ]
     )
