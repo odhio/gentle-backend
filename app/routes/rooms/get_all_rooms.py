@@ -8,7 +8,6 @@ class Room(APIBaseModel):
     uuid: str
     name: str
     emotion: str | None
-    summary: str | None
     closed_at: datetime | None
 
 
@@ -24,7 +23,6 @@ async def handler(session: AsyncSession) -> GetAllRoomsResponse:
                 uuid=room.uuid,
                 name=room.name,
                 emotion=room.emotion,
-                summary=room.summary,
                 closed_at=room.closed_at,
             )
             for room in rooms
