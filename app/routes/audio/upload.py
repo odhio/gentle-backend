@@ -19,7 +19,6 @@ async def predict_audio(
 ) -> LabelsResponse:
     emotions, pressure = wav2vec2.predict(content)
 
-    # pressureは使わないけど一応残してる
     level: PressureLevel = "high"
     if pressure < 0.02:
         level = "low"

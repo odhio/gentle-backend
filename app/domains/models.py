@@ -39,6 +39,64 @@ class User(Base):
     messages = relationship("Message", back_populates="user")
     rooms = relationship("RoomMember", back_populates="user")
 
+
+class Dream(Base):
+    __tablename__ = "dreams"
+
+    uuid = Column(String, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        onupdate=func.now(),
+    )
+
+
+class Milestone(Base):
+    __tablename__ = "milestones"
+
+    uuid = Column(String, primary_key=True, index=True)
+    dream_uuid = Column(String, ForeignKey("dreams.uuid"), nullable=False)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    due_date = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        onupdate=func.now(),
+    )
+
+    current_milestone = relationship("CurrentMilestone", back_populates="milestone")
+    rooms = relationship("Room", back_populates="milestone")
+
+
+class CurrentMilestone(Base):
+    __tablename__ = "current_milestones"
+
+    uuid = Column(String, primary_key=True, index=True)
+    milestone_uuid = Column(String, ForeignKey("milestones.uuid"), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        onupdate=func.now(),
+    )
+
+    milestone = relationship("Milestone", back_populates="current_milestone")
+
+
 class Emotion(enum.Enum):
     HAPPY = "happy"
     SAD = "sad"
@@ -47,11 +105,11 @@ class Emotion(enum.Enum):
     DISGUST = "disgust"
     NEUTRAL = "neutral"
 
-
 class Room(Base):
     __tablename__ = "rooms"
 
     uuid = Column(String, primary_key=True, index=True)
+    milestone_uuid = Column(String, ForeignKey("milestones.uuid"), nullable=True)
     name = Column(String, nullable=False)
     emotion = Column(Enum(Emotion), default=Emotion.NEUTRAL, nullable=False)
     summary = Column(Text, default="", nullable=False)
@@ -68,6 +126,7 @@ class Room(Base):
 
     members = relationship("RoomMember", back_populates="room")
     messages = relationship("Message", back_populates="room")
+    milestone = relationship("Milestone", back_populates="rooms")
 
 
 class RoomMember(Base):

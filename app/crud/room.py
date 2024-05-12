@@ -65,3 +65,9 @@ async def add_room_summary(db: AsyncSession, room_uuid: str, summary: str):
     await db.refresh(room)
 
     return room
+
+
+async def get_rooms_by_milestone_uuid(db: AsyncSession, milestone_uuid: str):
+    query = select(Room).where(Room.milestone_uuid == milestone_uuid)
+    result = await db.execute(query)
+    return result.scalars().all()
