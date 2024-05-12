@@ -47,7 +47,7 @@ def handler(req: GenerateRequest) -> str:
             m = Message(**message)
             _messages.append(m.dict())
         else:
-            _messages.append(message.dict())  # 同様にdict()を使用
+            _messages.append(message.dict())
 
     res = _pipe(_messages, **_generation_args)
     return GenerateResponse(content=res[0]["generated_text"])
