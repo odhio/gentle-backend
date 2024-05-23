@@ -4,3 +4,12 @@ __pycache__/
 .pytest_cache/
 .git
 db/db-store/
+
+.env
+.env.local
+/env
+app/pyvenv.cfg
+env/.env
+/env
+app/dump-file.dump
+env/.env

@@ -3,7 +3,7 @@ from infra.db_connector import get_async_session
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from . import get_all_rooms, create_room, get_active_rooms, close_room, get_room_detail
+from . import get_all_rooms, create_room, get_active_rooms, close_room, get_room_detail, get_all_rooms_detail
 
 router = APIRouter()
 
@@ -20,6 +20,8 @@ async def _create_room(
 async def _get_all_rooms(
     session: AsyncSession = Depends(get_async_session),
 ):
+    result = await get_all_rooms.handler(session)
+    print(result)
     return await get_all_rooms.handler(session)
 
 
@@ -44,3 +46,10 @@ async def _get_room_detail(
     session: AsyncSession = Depends(get_async_session),
 ):
     return await get_room_detail.handler(session, room_uuid)
+
+
+@router.get("/get_all/detail", response_model=get_all_rooms_detail.GetAllRoomsDetailResponse)
+async def _get_all_rooms_detail(
+    session: AsyncSession = Depends(get_async_session),
+):
+    return await get_all_rooms_detail.handler(session)

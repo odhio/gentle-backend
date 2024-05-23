@@ -6,26 +6,23 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv(dotenv_path="./env/.env")
 
+
 __DB_DIALECT = "postgresql"
-__DB_USER = os.environ.get("POSTGRES_USER")
-__DB_PASSWD = os.environ.get("POSTGRES_PASSWORD")
-__DB_PORT = os.environ.get("POSTGRES_PORT")
-__DB_NAME = os.environ.get("POSTGRES_DATABASE")
-__DB_CONTAINER_NAME = os.environ.get("DB_CONTAINER_NAME")
+__DB_USER = "gentle"
+__DB_PASSWD = "password"
+__DB_PORT = "5432"
+__DB_NAME = "gentle"
+__DB_CONTAINER_NAME = "localhost"
 
 DATABASE_URL = f"{__DB_DIALECT}://{__DB_USER}:{__DB_PASSWD}@{__DB_CONTAINER_NAME}:{__DB_PORT}/{__DB_NAME}"
 print(DATABASE_URL)
 engine = create_engine(DATABASE_URL)
 
-async_engine = create_async_engine(
-    DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
-)
+async_engine = create_async_engine(DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"))
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-AsyncSessionLocal = sessionmaker(
-    autocommit=False, autoflush=False, bind=async_engine, class_=AsyncSession
-)
+AsyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=async_engine, class_=AsyncSession)
 
 
 def get_session():

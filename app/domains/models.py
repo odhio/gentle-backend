@@ -16,6 +16,7 @@ from sqlalchemy.orm import relationship, joinedload, selectinload
 from sqlalchemy.sql import func
 import enum
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.dialects.postgresql import JSONB
 
 Base = declarative_base()
 
@@ -26,9 +27,7 @@ class User(Base):
     uuid = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False)
     image = Column(String, nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -46,9 +45,7 @@ class Dream(Base):
     uuid = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False)
     description = Column(Text, nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -65,9 +62,7 @@ class Milestone(Base):
     name = Column(String, nullable=False)
     description = Column(Text, nullable=False)
     due_date = Column(DateTime(timezone=True), nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -84,9 +79,7 @@ class CurrentMilestone(Base):
 
     uuid = Column(String, primary_key=True, index=True)
     milestone_uuid = Column(String, ForeignKey("milestones.uuid"), nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -105,6 +98,7 @@ class Emotion(enum.Enum):
     DISGUST = "disgust"
     NEUTRAL = "neutral"
 
+
 class Room(Base):
     __tablename__ = "rooms"
 
@@ -113,9 +107,7 @@ class Room(Base):
     name = Column(String, nullable=False)
     emotion = Column(Enum(Emotion), default=Emotion.NEUTRAL, nullable=False)
     summary = Column(Text, default="", nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -123,6 +115,7 @@ class Room(Base):
         onupdate=func.now(),
     )
     closed_at = Column(DateTime(timezone=True), nullable=True)
+    google_schedule = Column(JSONB, nullable=True)
 
     members = relationship("RoomMember", back_populates="room")
     messages = relationship("Message", back_populates="room")
@@ -136,9 +129,7 @@ class RoomMember(Base):
     room_uuid = Column(String, ForeignKey("rooms.uuid"), nullable=False)
     user_uuid = Column(String, ForeignKey("users.uuid"), nullable=False)
     summary = Column(Text, default="", nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -150,6 +141,7 @@ class RoomMember(Base):
     room = relationship("Room", back_populates="members")
     user = relationship("User", back_populates="rooms")
 
+
 class Message(Base):
     __tablename__ = "messages"
 
@@ -158,9 +150,7 @@ class Message(Base):
     user_uuid = Column(String, ForeignKey("users.uuid"), nullable=False)
     message = Column(Text, nullable=False)
     emotion = Column(Enum(Emotion), nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,

@@ -4,12 +4,15 @@ from sqlalchemy.sql import select
 from sqlalchemy.orm import joinedload
 import uuid
 
+
 async def get_room_members_by_room_uuid(db: AsyncSession, room_uuid: str):
-    query = (
-        select(RoomMember)
-        .where(RoomMember.room_uuid == room_uuid)
-        .options(joinedload(RoomMember.user))
-    )
+    query = select(RoomMember).where(RoomMember.room_uuid == room_uuid).options(joinedload(RoomMember.user))
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
+async def get_room_members_by_user_uuid(db: AsyncSession, user_uuid: str):
+    query = select(RoomMember).where(RoomMember.user_uuid == user_uuid).options(joinedload(RoomMember.room))
     result = await db.execute(query)
     return result.scalars().all()
 
@@ -25,7 +28,22 @@ async def join_room(db: AsyncSession, room_uuid: str, user_uuid: str):
 
 
 async def add_summary(db: AsyncSession, room_member_uuid: str, summary: str):
-    room_member = select(RoomMember).where(RoomMember.uuid == room_member_uuid)
-    room_member.summary = summary
+    query = select(RoomMember).where(RoomMember.uuid == room_member_uuid)
+    result = await db.execute(query)
+    room_member = result.scalars().first()
 
-    return room_member
+    if room_member:
+        room_member.summary = summary
+        await db.flush()
+        await db.refresh(room_member)
+
+        return room_member
+
+    else:
+        pass
+
+
+async def get_all_room_members(db: AsyncSession):
+    query = select(RoomMember)
+    result = await db.execute(query)
+    return result.scalars().all()

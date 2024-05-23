@@ -8,7 +8,7 @@ import torch
 import ffmpeg
 
 
-model_path = "Konik-Y/w2v2-dummy-model02"
+model_path = "Konik-Y/wav2vec2-lg-960-ser-jp"
 feature_extractor = AutoFeatureExtractor.from_pretrained(model_path)
 audio_model = AutoModelForAudioClassification.from_pretrained(model_path)
 audio_model.eval()

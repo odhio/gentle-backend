@@ -13,6 +13,7 @@ from routes import (
     messages,
     dreams,
     milestones,
+    analytics,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -43,12 +44,11 @@ app.include_router(generate.router, prefix="/api/generate", tags=["generate"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(rooms.router, prefix="/api/rooms", tags=["rooms"])
-app.include_router(
-    room_members.router, prefix="/api/room_members", tags=["room_members"]
-)
+app.include_router(room_members.router, prefix="/api/room_members", tags=["room_members"])
 app.include_router(messages.router, prefix="/api/messages", tags=["messages"])
 app.include_router(dreams.router, prefix="/api/dreams", tags=["dreams"])
 app.include_router(milestones.router, prefix="/api/milestones", tags=["milestones"])
+app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
 
 
 def main():

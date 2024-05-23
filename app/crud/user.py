@@ -26,3 +26,14 @@ async def create_user(session: AsyncSession, name: str, image: str):
     await session.refresh(user)
 
     return user
+
+
+async def update_user(session: AsyncSession, uuid: str, name: str, image: str):
+    stmt = select(User).where(User.uuid == uuid)
+    user = (await session.execute(stmt)).scalars().first()
+    user.name = name
+    user.image = image
+    await session.flush()
+    await session.refresh(user)
+
+    return user
