@@ -15,6 +15,7 @@ from routes import (
     milestones,
     analytics,
 )
+import os
 
 logging.basicConfig(level=logging.INFO)
 
@@ -32,8 +33,11 @@ async def add_process_time_header(request: Request, call_next):
     return response
 
 
+ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "").split(",")
+
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
     allow_origin_regex=r"^https?://localhost(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
@@ -52,7 +56,7 @@ app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"]
 
 
 def main():
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, log_level="debug", reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="debug", reload=True)
 
 
 if __name__ == "__main__":
