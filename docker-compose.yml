@@ -6,11 +6,28 @@ services:
       context: .
       dockerfile: ./postgres/Dockerfile
     container_name: gentle-db
-    env_file:
-      - ./env/.env
     environment:
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
     volumes:
       - ./db/db-store:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    networks:
+      - gentle-networks
+
+  api:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: gentle-api
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+    networks:
+      - gentle-networks
+
+networks:
+  gentle-networks:
+    driver: bridge
+ 

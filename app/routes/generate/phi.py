@@ -4,9 +4,9 @@ from schema import APIBaseModel
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-import openai
+from openai import openai, AsyncOpenAI
 
-openai_client = openai.Client()
+openai_client = AsyncOpenAI()
 
 
 class Message(BaseModel):
@@ -22,7 +22,7 @@ class GenerateResponse(APIBaseModel):
     content: str
 
 
-def handler(req: GenerateRequest) -> str:
+async def handler(req: GenerateRequest) -> str:
     _messages = []
     for message in req.messages:
         if isinstance(message, dict):
@@ -31,7 +31,7 @@ def handler(req: GenerateRequest) -> str:
         else:
             _messages.append(message.dict())
 
-    res = openai_client.chat.completions.create(
+    res = await openai_client.chat.completions.create(
         model="gpt-3.5-turbo-0125",
         messages=_messages,
         temperature=0.7,

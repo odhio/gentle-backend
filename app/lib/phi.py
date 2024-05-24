@@ -2,29 +2,9 @@ from typing import Literal, Union
 from pydantic import BaseModel
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from openai import AsyncOpenAI
 
-torch.random.manual_seed(0)
-
-_model = AutoModelForCausalLM.from_pretrained(
-    "microsoft/Phi-3-mini-128k-instruct",
-    device_map="cuda" if torch.cuda.is_available() else "auto",  # OSが違うためここは変更
-    torch_dtype="auto",
-    trust_remote_code=True,
-)
-_tokenizer = AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-128k-instruct")
-
-
-_pipe = pipeline(
-    "text-generation",
-    model=_model,
-    tokenizer=_tokenizer,
-)
-
-_generation_args = {
-    "max_new_tokens": 1000,
-    "return_full_text": False,
-    "do_sample": True,
-}
+openai_cient = AsyncOpenAI()
 
 
 class Message(BaseModel):
@@ -32,7 +12,7 @@ class Message(BaseModel):
     content: str
 
 
-def predict(messages: Union[list[dict[str, str]], list[Message]]) -> str:
+async def predict(messages: Union[list[dict[str, str]], list[Message]]) -> str:
     _messages = []
     for message in messages:
         if isinstance(message, dict):
@@ -41,5 +21,13 @@ def predict(messages: Union[list[dict[str, str]], list[Message]]) -> str:
         else:
             _messages.append(message.model_dump())
 
-    res = _pipe(_messages, **_generation_args)
-    return res[0]["generated_text"]
+        res = await openai_cient.chat.completions.create(
+            model="gpt-3.5-turbo-0125",
+            messages=_messages,
+            temperature=0.7,
+            top_p=1.0,
+            frequency_penalty=0.0,
+            presence_penalty=0.0,
+            stream=False,
+        )
+    return res.choices[0].message.content
