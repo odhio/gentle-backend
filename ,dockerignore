@@ -1,2 +1,6 @@
-./env/
+/env
+temp/
 ./app/temp/
+.git
+__pycache__/
+.pytest_cache/

@@ -1,10 +1,10 @@
-FROM python:3.12
+FROM python:3.12-slim
 
 WORKDIR /app
 
 COPY requirements.txt /app/
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --no-cache-dir
 
 COPY ./app /app
 COPY alembic.ini /app/alembic.ini

@@ -4,7 +4,7 @@ from schema import APIBaseModel
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-from openai import openai, AsyncOpenAI
+from openai import AsyncOpenAI
 
 openai_client = AsyncOpenAI()
 
