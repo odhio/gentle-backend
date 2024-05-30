@@ -6,11 +6,7 @@ from crud.room_member import (
 )
 from crud.message import get_messages_by_room_uuid
 from pydantic import BaseModel
-from schema import APIBaseModel
 from domains import Emotion
-
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 import openai
 import dotenv
@@ -24,15 +20,12 @@ dotenv.load_dotenv()
 openai_model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo-0125")
 openai_client = openai.Client()
 
-
-class CloseRoomResponse(APIBaseModel):
-    room_uuid: str
-    room_summary: str
-    room_emotion: str
+class CloseRoomResponse(BaseModel):
+    status: str
 
 
-async def handler(session: AsyncSession, room_uuid: str) -> CloseRoomResponse:
-    room = await close_room(session, room_uuid)
+async def handler(room_uuid: str, session: AsyncSession):
+    room = await close_room(room_uuid)
     room_members = await get_room_members_by_room_uuid(session, room.uuid)
     messages = await get_messages_by_room_uuid(session, room.uuid)
 
@@ -43,8 +36,8 @@ async def handler(session: AsyncSession, room_uuid: str) -> CloseRoomResponse:
             [f"発言: {message.message}、感情: {message.emotion}" for message in member_messages]
         )
 
-        member_system_prompt = """デイリースプリントが終了しました。
-参加者の全ての発言とその時の感情を基に、直近のユーザーのタスク進捗と会議中の感情についてまとめてください。
+        member_system_prompt = """
+        ユーザーの全ての発言と感情を基に、直近のタスク進捗と会議中の感情についてまとめてください。
 """
         member_messages = [
             {"role": "system", "content": member_system_prompt},
@@ -70,7 +63,7 @@ async def handler(session: AsyncSession, room_uuid: str) -> CloseRoomResponse:
         [f"{member_summary['user_name']}:\n{member_summary['summary']}" for member_summary in member_summaries]
     )
 
-    room_system_prompt = """デイリースプリントが終了しました。
+    room_system_prompt = """
 参加者全員の発言とその時の感情のまとめを基に、チーム全体のタスク進捗と会議中の感情についてまとめてください。
 """
     room_messages = [
@@ -201,9 +194,3 @@ async def handler(session: AsyncSession, room_uuid: str) -> CloseRoomResponse:
                 }
                 print(event)
                 await add_room_schedule(session, room.uuid, event)
-
-    return CloseRoomResponse(
-        room_uuid=room.uuid,
-        room_summary=room_res,
-        room_emotion=emotion,
-    )
