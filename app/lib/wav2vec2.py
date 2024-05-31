@@ -39,18 +39,25 @@ def _convert_to_wav(file_path, output_path):
 
 
 def _save_audio(audio_data):
-    save_directory = os.path.join(".", "temp")
-    os.makedirs(save_directory, exist_ok=True)
+    try:
+        save_directory = os.path.join(".", "temp")
+        os.makedirs(save_directory, exist_ok=True)
 
-    saved_audio_path = os.path.join(save_directory, str(uuid.uuid4()) + ".wav")
-    temp_path = os.path.join(save_directory, str(uuid.uuid4()) + ".wav")
+        saved_audio_path = os.path.join(save_directory, str(uuid.uuid4()) + ".wav")
+        temp_path = os.path.join(save_directory, str(uuid.uuid4()) + ".wav")
 
-    with open(saved_audio_path, "wb") as f:
-        f.write(audio_data)
+        with open(saved_audio_path, "wb") as f:
+            f.write(audio_data)
 
-    _convert_to_wav(saved_audio_path, temp_path)
+        _convert_to_wav(saved_audio_path, temp_path)
 
-    return temp_path
+        return temp_path
+    except Exception as e:
+        raise Exception(str(e))
+
+    finally:
+        if os.path.isfile(saved_audio_path):
+            os.remove(saved_audio_path)
 
 
 def _remove_audio_file(audio_path):

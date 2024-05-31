@@ -15,6 +15,7 @@ async def _audio_upload(
     session: AsyncSession = Depends(get_async_session),
 ):
     try:
+        # TODO: ここでmessage_uuidを使ってmessageが空の場合はwhisperで補正処理を差し込む（一旦差し込んで重かったらコスト/リターンでその後は判断）
         content = audio.file.read()
         return await upload.predict_audio(session, message_uuid, content)
     except Exception as e:

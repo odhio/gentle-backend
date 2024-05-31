@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
@@ -16,7 +17,7 @@ __DB_CONTAINER_NAME = "gentle-db"
 
 DATABASE_URL = f"{__DB_DIALECT}://{__DB_USER}:{__DB_PASSWD}@{__DB_CONTAINER_NAME}:{__DB_PORT}/{__DB_NAME}"
 print(DATABASE_URL)
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, echo_pool="debug", pool_pre_ping=True)
 
 async_engine = create_async_engine(DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"))
 
@@ -29,6 +30,9 @@ def get_session():
     session = SessionLocal()
     try:
         yield session
+        session.commit()
+    except Exception as e:
+        session.rollback()
     finally:
         session.close()
 
@@ -38,5 +42,19 @@ async def get_async_session():
     try:
         yield async_session
         await async_session.commit()
+    except Exception as e:
+        await async_session.rollback()
     finally:
         await async_session.close()
+
+
+@asynccontextmanager
+async def create_async_session_with_context():
+    session = AsyncSessionLocal()
+    try:
+        yield session
+        await session.commit()
+    except Exception as e:
+        await session.rollback()
+    finally:
+        await session.close()

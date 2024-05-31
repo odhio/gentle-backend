@@ -157,6 +157,7 @@ class Message(Base):
         default=func.now(),
         onupdate=func.now(),
     )
+    pressure = Column(Float, nullable=False, default=0.0)
 
     room = relationship("Room", back_populates="messages")
     user = relationship("User", back_populates="messages")

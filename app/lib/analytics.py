@@ -2,14 +2,25 @@ import pandas as pd
 from domains.models import Message
 import seaborn as sns
 import random
+from lib.janome import ranking_words
+
+# TODO:
+# 1. Reaumple the time series data,
+# 2. Create a time series plot for each data
+
+# 1-> rms > mean > despersion > trend > seasonality
+
+
+def set_resample_term(start: pd.Timestamp, end: pd.Timestamp) -> str:
+    duration = end.hour - start.hour
+    if duration == 0:
+        duration = end.minute - start.minute
 
 
 def user_time_series(messages: list[Message]) -> pd.DataFrame:
     df = pd.DataFrame(
         [
             {
-                "message_uuid": message.uuid,
-                "room_uuid": message.room_uuid,
                 "user_uuid": message.user_uuid,  # count
                 "message": message.message,  # count
                 "created_at": message.created_at,  # order
@@ -23,6 +34,7 @@ def user_time_series(messages: list[Message]) -> pd.DataFrame:
     df.set_index("created_at", inplace=True)
     resampled_df = df.groupby("name").resample("1T").size().unstack(fill_value=0)
     time_series_pivot = resampled_df.T
+
     return time_series_pivot
 
 
@@ -30,10 +42,7 @@ def emotion_time_series(messages: list[Message]) -> pd.DataFrame:
     df = pd.DataFrame(
         [
             {
-                "message_uuid": message.uuid,
-                "room_uuid": message.room_uuid,
                 "user_uuid": message.user_uuid,
-                "message": message.message,
                 "emotion": message.emotion,
                 "created_at": message.created_at,
                 "name": message.user.name,
@@ -46,6 +55,26 @@ def emotion_time_series(messages: list[Message]) -> pd.DataFrame:
     df.set_index("created_at", inplace=True)
     resampled_df = df.groupby("emotion").resample("1T").size().unstack(fill_value=0)
     time_series_pivot = resampled_df.T
+
+    return time_series_pivot
+
+
+def topic_time_series(messages: list[Message]) -> pd.DataFrame:
+    df = pd.DataFrame(
+        [
+            {
+                "user_uuid": message.user_uuid,
+                "message": message.message,
+                "created_at": message.created_at,
+            }
+            for message in messages
+        ]
+    )
+    df["created_at"] = df["created_at"].dt.tz_convert("Asia/Tokyo")
+    df.set_index("created_at", inplace=True)
+    resampled_df = df.groupby("name").resample("1T").size().unstack(fill_value=0)
+    time_series_pivot = resampled_df.T
+
     return time_series_pivot
 
 
