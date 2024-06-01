@@ -8,6 +8,7 @@ from sqlalchemy import (
     Text,
     DateTime,
     func,
+    REAL,
     JSON,
     Boolean,
     UniqueConstraint,
@@ -157,7 +158,7 @@ class Message(Base):
         default=func.now(),
         onupdate=func.now(),
     )
-    pressure = Column(Float, nullable=False, default=0.0)
+    pressure = Column(REAL, nullable=False, default=0)
 
     room = relationship("Room", back_populates="messages")
     user = relationship("User", back_populates="messages")

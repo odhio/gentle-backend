@@ -33,11 +33,12 @@ async def create_message(db: AsyncSession, room_uuid: str, user_uuid: str, messa
     return message
 
 
-async def add_message_emotion(db: AsyncSession, message_uuid: str, emotion_str: str):
+async def add_message_emotion(db: AsyncSession, message_uuid: str, emotion_str: str, pressure: float):
     emotion = Emotion(emotion_str)
     query = select(Message).where(Message.uuid == message_uuid)
     message = (await db.execute(query)).scalars().first()
     message.emotion = emotion
+    message.pressure = pressure
     await db.flush()
     await db.refresh(message)
 
