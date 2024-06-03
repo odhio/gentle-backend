@@ -109,23 +109,21 @@ def rms_time_series(messages: list[Message]) -> pd.DataFrame:
 
     result = []
     for name, group in df.groupby("name"):
-        resampled_df = group.resample(resample_rate).agg({"pressure": "mean"})
+        resampled_df = group.resample(resample_rate).agg({"pressure": "mean"}).fillna(0)
 
         # 音量/音圧関係は環境差がでかいので平均をとって集計区間にサンプル(発話)が存在する場合はその偏差を算出
         # 比較的音圧が大きい区間は相対的に重要度が高い/議論が集中した可能性があるのではという仮説検証
-        resampled_df["pressure_zsore"] = resampled_df["pressure"].transform(set_zscore)
-        for score in resampled_df["pressure_zsore"]:
-            print(score)
         resampled_df["name"] = name
-        print(resampled_df)
+        resampled_df["pressure_zsore"] = resampled_df["pressure"].transform(set_zscore).fillna(0)
+
         result.append(resampled_df)
-    print(resampled_df)
     resampled_df = pd.concat(result)
     resampled_df.reset_index(inplace=True)
     resampled_df.rename(columns={"index": "created_at"}, inplace=True)
     resampled_df.set_index(["name", "created_at"], inplace=True)
 
     # 他のtsと時系列を合わせたかったのですが、うまくいかなかったので一旦reindexで使用したtime_rangeを一緒に返してます。
+    # 上位の関数を立ててindex範囲を定義して各関数に渡すよう変更を考えてます(FEでの表示データ欠落にもつながるので)。
     return resampled_df, time_range
 
 
