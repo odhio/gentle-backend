@@ -29,4 +29,5 @@ async def predict_audio(session: AsyncSession, message_uuid: str, content: bytes
 
     most_emote = max(emote_count_dict, key=emote_count_dict.get)
     message = await add_message_emotion(session, message_uuid, most_emote, pressure)
+    print(f"message: {message}")
     return LabelsResponse(result=most_emote, pressure=level)

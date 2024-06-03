@@ -33,6 +33,7 @@ def get_session():
         session.commit()
     except Exception as e:
         session.rollback()
+        raise e
     finally:
         session.close()
 
@@ -44,6 +45,7 @@ async def get_async_session():
         await async_session.commit()
     except Exception as e:
         await async_session.rollback()
+        raise e
     finally:
         await async_session.close()
 
@@ -56,5 +58,6 @@ async def create_async_session_with_context():
         await session.commit()
     except Exception as e:
         await session.rollback()
+        raise e
     finally:
         await session.close()

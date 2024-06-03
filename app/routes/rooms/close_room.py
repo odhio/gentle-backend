@@ -38,7 +38,7 @@ async def handler(room_uuid: str):
             messages = await get_messages_by_room_uuid_user_joined(session, room.uuid)
         except Exception as e:
             logger.error(f"Failed to get/set information from the DB {room_uuid}: {e}")
-
+            raise e
         member_summaries = []
         for member in room_members:
             try:
@@ -56,7 +56,7 @@ async def handler(room_uuid: str):
                 )
             except Exception as e:
                 logger.error(f"Failed to get messages for member {member.uuid}: {e}")
-
+                raise e
             member_system_prompt = """
             ユーザーの全ての発言と感情を基に、直近のタスク進捗と会議中の感情についてまとめてください。
     """
@@ -82,6 +82,7 @@ async def handler(room_uuid: str):
 
             except Exception as e:
                 logger.error(f"Failed to generate summary for member {member.uuid}: {e}")
+                raise e
         try:
             room_summary = "\n\n".join(
                 [f"{member_summary['user_name']}:\n{member_summary['summary']}" for member_summary in member_summaries]
@@ -96,6 +97,7 @@ async def handler(room_uuid: str):
             ]
         except Exception as e:
             logger.error(f"Failed to set all member's summary : {e}")
+            raise e
 
         try:
             room_res = await openai_client.chat.completions.create(
@@ -118,6 +120,7 @@ async def handler(room_uuid: str):
 
         except Exception as e:
             logger.error(f"Failed to generate summary for room {room.uuid}: {e}")
+            raise e
 
         schedule_system_prompt = """ユーザの会話に日時や場所など将来の確定した予定が含まれているときは、その情報を詳細かつ端的に抽出しユーザをサポートしてください。
         """
@@ -163,6 +166,7 @@ async def handler(room_uuid: str):
             args_1 = json.loads(tool_calls.function.arguments)
         except Exception as e:
             logger.error(f"Failed to initial fn-call: {e}")
+            raise e
 
         if "is_included" in args_1.keys():
             if args_1["is_included"]:
@@ -212,6 +216,7 @@ async def handler(room_uuid: str):
                     args_2 = json.loads(tool_call.function.arguments)
                 except Exception as e:
                     logger.error(f"Failed to main fn-call: {e}")
+                    raise e
 
                 if all(tool in args_2.keys() for tool in required_tools):
                     event = {
@@ -237,3 +242,4 @@ async def handler(room_uuid: str):
                         await add_room_schedule(session, room.uuid, event)
                     except Exception as e:
                         logger.error(f"Failed to set schedule: {e}")
+                        raise e

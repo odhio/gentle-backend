@@ -10,6 +10,7 @@ class ResponseMessage(APIBaseModel):
     message: str
     emotion: str
     created_at: datetime
+    pressure: float
 
 
 class GetMessageByRoomRequest(APIBaseModel):
@@ -30,6 +31,7 @@ async def handler(session: AsyncSession, room_uuid: str) -> GetMessageByRoomResp
                 message=message.message,
                 emotion=message.emotion,
                 created_at=message.created_at,
+                pressure=message.pressure,
             )
             for message in result
         ]
