@@ -73,13 +73,3 @@ async def get_rooms_by_milestone_uuid(db: AsyncSession, milestone_uuid: str):
     query = select(Room).where(Room.milestone_uuid == milestone_uuid)
     result = await db.execute(query)
     return result.scalars().all()
-
-
-async def add_room_schedule(db: AsyncSession, room_uuid: str, event: JSONB):
-    query = select(Room).where(Room.uuid == room_uuid)
-    room = (await db.execute(query)).scalars().first()
-    room.google_schedule = event
-    await db.flush()
-    await db.refresh(room)
-
-    return room

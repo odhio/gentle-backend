@@ -116,7 +116,6 @@ class Room(Base):
         onupdate=func.now(),
     )
     closed_at = Column(DateTime(timezone=True), nullable=True)
-    google_schedule = Column(JSONB, nullable=True)
 
     members = relationship("RoomMember", back_populates="room")
     messages = relationship("Message", back_populates="room")

@@ -116,7 +116,7 @@ def create_term_document_matrix(sentences: list[str]) -> dict[str, int]:
     INPUT:
         [str, str, str, ...]
     OUTPUT:
-        DataFrame
+        {'単語１': 5, '単語２': 4, '単語３': 3, ...
     """
     target_list = []
     for sentence in sentences:
@@ -141,8 +141,9 @@ def create_tfidf_matrix(sentences: list[str]) -> dict[str, float]:
     INPUT:
         [str, str, str, ...]
     OUTPUT:
-        DataFrame
+        {'単語１': 2.4321004085182274, '単語２': 1.661562462753031, ...
     """
+    print(sentences)
     target_list = []
     for sentence in sentences:
         target_list.append(" ".join(tokenize_sentences(sentence)))
@@ -163,6 +164,7 @@ def create_tfidf_matrix(sentences: list[str]) -> dict[str, float]:
 
 def create_term_combination(sentences: list[str]) -> dict[str, dict[int, str | int]]:
     sentences = [tokenize_sentences(text) for text in sentences]
+    print(sentences)
     sentences_combs = [list(itertools.combinations(sentence, 2)) for sentence in sentences]
     words_combs = [[tuple(sorted(words)) for words in sentence] for sentence in sentences_combs]
     target_combs = []

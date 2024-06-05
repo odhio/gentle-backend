@@ -6,7 +6,6 @@ import random
 from lib.janome import ranking_words, create_term_document_matrix, create_tfidf_matrix, create_term_combination
 
 
-# 文脈考慮する場合の変更案 paper:https://www.jstage.jst.go.jp/article/tjsai/23/6/23_6_384/_article/-char/ja
 def set_resample_term(start: pd.Timestamp, end: pd.Timestamp) -> str:
     duration = (end - start).total_seconds() / 60
     if duration < 10:

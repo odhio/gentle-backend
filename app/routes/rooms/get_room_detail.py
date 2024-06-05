@@ -1,8 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from crud.room import get_room_by_uuid
 from schema import APIBaseModel
-from datetime import datetime
-from typing import Any, Optional
 
 
 class RoomMember(APIBaseModel):
@@ -18,7 +16,6 @@ class GetRoomDetailResponse(APIBaseModel):
     summary: str
     emotion: str
     room_members: list[RoomMember]
-    google_schedule: Optional[dict[str, Any]]
 
 
 async def handler(session: AsyncSession, room_uuid: str) -> GetRoomDetailResponse:
@@ -37,5 +34,4 @@ async def handler(session: AsyncSession, room_uuid: str) -> GetRoomDetailRespons
             )
             for room_member in room.members
         ],
-        google_schedule=room.google_schedule,
     )
