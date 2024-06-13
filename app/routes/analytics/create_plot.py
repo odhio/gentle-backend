@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from crud.message import get_messages_by_room_uuid_user_joined
 from pydantic import BaseModel
 from typing import Union
@@ -14,6 +15,9 @@ from lib.analytics import (
 from domains.models import Emotion
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class CreatePlotRequest(BaseModel):
@@ -114,84 +118,111 @@ def set_color(emotion):
 
 async def handler(db: AsyncSession, room_uuid: str) -> CreatePlotResponse:
     messages = await get_messages_by_room_uuid_user_joined(db, room_uuid)
+    if messages is None:
+        raise HTTPException(status_code=404, detail="required room's messages not found")
 
-    user_ts = user_time_series(messages)
-    # ユーザ数に応じて色を生成(色の一貫性を保つために使い回す)
-    user_ts_color = random_color(len(user_ts.columns.to_list()))
-    user_ts_response = ChartJSData(
-        labels=[ts.strftime("%Y-%m-%d %H:%M:%S") for ts in user_ts.index.tolist()],
-        datasets=[
-            LineType(
-                label=col,
-                data=user_ts[col].tolist(),
-                borderColor=user_ts_color[i],
-                backgroundColor=user_ts_color[i],
-            )
-            for i, col in enumerate(user_ts.columns)
-        ],
-    )
-
-    emotion_ts = emotion_time_series(messages)
-    emotion_ts_response = ChartJSData(
-        labels=[ts.strftime("%Y-%m-%d %H:%M:%S") for ts in emotion_ts.index.tolist()],
-        datasets=[
-            LineType(
-                label=col,
-                data=emotion_ts[col].to_list(),
-                borderColor=set_color(col),
-                backgroundColor=set_color(col),
-            )
-            for i, col in enumerate(emotion_ts.columns)
-        ],
-    )
-
-    emotion_sum = emotion_summary(messages)
-    emotion_sum_response = ChartJSData(
-        labels=emotion_sum.columns.to_list(),
-        datasets=[
-            CircleType(
-                label=i,
-                data=row.to_list(),
-                borderColor=[set_color(col) for col in emotion_sum.columns],
-                backgroundColor=[set_color(col) for col in emotion_sum.columns],
-            )
-            for i, row in emotion_sum.iterrows()
-        ],
-    )
-
-    topics_ts = topics_time_series(messages)
-    topics_ts_response = TopicsTimeSeries(
-        topics=[dict(v.most_common(10)) for v in topics_ts["message"].to_list()],
-        segments=[ts.strftime("%Y-%m-%d %H:%M:%S") for ts in user_ts.index.tolist()],
-    )
-
-    rms_ts, time_range = rms_time_series(messages)
-    rms_list = []
-
-    i = 0
-    for name, group in rms_ts.groupby(level=0):
-        rms_list.append(
-            LineType(
-                label=name,
-                data=group["pressure_zsore"].to_list(),
-                borderColor=user_ts_color[i],
-                backgroundColor=user_ts_color[i],
-            )
+    try:
+        user_ts = user_time_series(messages)
+        # ユーザ数に応じて色を生成(色の一貫性を保つために使い回す)
+        user_ts_color = random_color(len(user_ts.columns.to_list()))
+        user_ts_response = ChartJSData(
+            labels=[ts.strftime("%Y-%m-%d %H:%M:%S") for ts in user_ts.index.tolist()],
+            datasets=[
+                LineType(
+                    label=col,
+                    data=user_ts[col].tolist(),
+                    borderColor=user_ts_color[i],
+                    backgroundColor=user_ts_color[i],
+                )
+                for i, col in enumerate(user_ts.columns)
+            ],
         )
-        i += 1
-    rms_rs_response = ChartJSData(
-        labels=[ts.strftime("%Y-%m-%d %H:%M:%S") for ts in time_range],
-        datasets=rms_list,
-    )
+    except Exception as e:
+        logger.error(f"failed to create user time series: {e}")
+        raise HTTPException(status_code=500, detail=f"failed to create user time series: {e}")
 
-    countup, tfidf = topics_summary(messages)
+    try:
+        emotion_ts = emotion_time_series(messages)
+        emotion_ts_response = ChartJSData(
+            labels=[ts.strftime("%Y-%m-%d %H:%M:%S") for ts in emotion_ts.index.tolist()],
+            datasets=[
+                LineType(
+                    label=col,
+                    data=emotion_ts[col].to_list(),
+                    borderColor=set_color(col),
+                    backgroundColor=set_color(col),
+                )
+                for i, col in enumerate(emotion_ts.columns)
+            ],
+        )
+    except Exception as e:
+        logger.error(f"failed to create emotion time series: {e}")
+        raise HTTPException(status_code=500, detail=f"failed to create emotion time series: {e}")
 
-    term_comb = term_combination(messages)
-    term_comb_response = TermCombination(
-        col_1=term_comb["col_1"],
-        col_2=term_comb["col_2"],
-        count=term_comb["count"],
-    )
+    try:
+        emotion_sum = emotion_summary(messages)
+        emotion_sum_response = ChartJSData(
+            labels=emotion_sum.columns.to_list(),
+            datasets=[
+                CircleType(
+                    label=i,
+                    data=row.to_list(),
+                    borderColor=[set_color(col) for col in emotion_sum.columns],
+                    backgroundColor=[set_color(col) for col in emotion_sum.columns],
+                )
+                for i, row in emotion_sum.iterrows()
+            ],
+        )
+    except Exception as e:
+        logger.error(f"failed to create emotion summary: {e}")
+        raise HTTPException(status_code=500, detail=f"failed to create emotion summary: {e}")
+
+    try:
+        topics_ts = topics_time_series(messages)
+        topics_ts_response = TopicsTimeSeries(
+            topics=[dict(v.most_common(10)) for v in topics_ts["message"].to_list()],
+            segments=[ts.strftime("%Y-%m-%d %H:%M:%S") for ts in user_ts.index.tolist()],
+        )
+    except Exception as e:
+        logger.error(f"failed to create topics time series: {e}")
+        raise HTTPException(status_code=500, detail=f"failed to create topics time series: {e}")
+
+    try:
+        rms_ts, time_range = rms_time_series(messages)
+        rms_list = []
+
+        i = 0
+        for name, group in rms_ts.groupby(level=0):
+            rms_list.append(
+                LineType(
+                    label=name,
+                    data=group["pressure_zsore"].to_list(),
+                    borderColor=user_ts_color[i],
+                    backgroundColor=user_ts_color[i],
+                )
+            )
+            i += 1
+        rms_rs_response = ChartJSData(
+            labels=[ts.strftime("%Y-%m-%d %H:%M:%S") for ts in time_range],
+            datasets=rms_list,
+        )
+
+    except Exception as e:
+        logger.error(f"failed to create rms time series: {e}")
+        raise HTTPException(status_code=500, detail=f"failed to create rms time series: {e}")
+
+    try:
+        countup, tfidf = topics_summary(messages)
+
+        term_comb = term_combination(messages)
+        term_comb_response = TermCombination(
+            col_1=term_comb["col_1"],
+            col_2=term_comb["col_2"],
+            count=term_comb["count"],
+        )
+    except Exception as e:
+        logger.error(f"failed to create topics summary: {e}")
+        raise HTTPException(status_code=500, detail=f"failed to create topics summary: {e}")
 
     return CreatePlotResponse(
         user_time_series=user_ts_response,
