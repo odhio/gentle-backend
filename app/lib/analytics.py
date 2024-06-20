@@ -1,5 +1,4 @@
 import pandas as pd
-import datetime
 from domains.models import Message
 import seaborn as sns
 import random

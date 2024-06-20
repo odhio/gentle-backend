@@ -13,7 +13,6 @@ from lib.analytics import create_tfidf_matrix
 from openai import AsyncOpenAI
 import dotenv
 import os
-from datetime import datetime, timezone, timedelta
 import logging
 
 dotenv.load_dotenv()
@@ -63,13 +62,13 @@ async def handler(room_uuid: str):
                     continue
 
                 member_messages_text = "\n".join(
-                    [f"発言: {message.message}、感情: {message.emotion}" for message in member_messages]
+                    [f"発言: {message.message}" for message in member_messages]
                 )
             except Exception as e:
                 logger.error(f"Failed to get messages for member {member.uuid}: {e}")
                 raise e
             member_system_prompt = """
-            ユーザーの全ての発言と感情を基に、直近のタスク進捗と会議中の感情についてまとめてください。
+            ユーザーの全ての発言を要約してください。またユーザが抱える課題や関心を推定し要約に含めるようにしてください。
     """
             member_messages = [
                 {"role": "system", "content": member_system_prompt},
@@ -100,10 +99,10 @@ async def handler(room_uuid: str):
             )
 
             room_system_prompt = """
-        参加者全員の発言とその時の感情のまとめを基に、チーム全体のタスク進捗と会議中の感情についてまとめてください。
+        参加者全員の発言のまとめを基に、チーム全体の会話を要約し、課題があるときは今後採るべき方策ついて提案してください。
         """
             if len(topics) > 0:
-                room_system_prompt += f"以下に関する発言があるときは、併せてまとめてください: {','.join(topics)}"
+                room_system_prompt += f"参考資料となる本会議におけるトピックは以下の通りです: {','.join(topics)}"
                 logger.info(f"system prompt: {room_system_prompt}")
             room_messages = [
                 {"role": "system", "content": room_system_prompt},

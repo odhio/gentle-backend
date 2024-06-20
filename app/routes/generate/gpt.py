@@ -1,8 +1,6 @@
-from typing import Literal, Union
+from typing import Literal
 from pydantic import BaseModel
 from schema import APIBaseModel
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 from openai import AsyncOpenAI
 

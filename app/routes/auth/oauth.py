@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class OAuthMeRequest(BaseModel):
     name: str
-    image: str
+    image: str|None = None
 
 
 class OAuthMeResponse(BaseModel):

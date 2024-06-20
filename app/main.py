@@ -43,6 +43,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.include_router(audio.router, prefix="/api/audio", tags=["audio"])
 app.include_router(generate.router, prefix="/api/generate", tags=["generate"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])

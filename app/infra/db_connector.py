@@ -13,7 +13,7 @@ __DB_USER = "gentle"
 __DB_PASSWD = "password"
 __DB_PORT = "5432"
 __DB_NAME = "gentle"
-__DB_CONTAINER_NAME = "localhost"
+__DB_CONTAINER_NAME = "gentle-db"
 
 DATABASE_URL = f"{__DB_DIALECT}://{__DB_USER}:{__DB_PASSWD}@{__DB_CONTAINER_NAME}:{__DB_PORT}/{__DB_NAME}"
 print(DATABASE_URL)
