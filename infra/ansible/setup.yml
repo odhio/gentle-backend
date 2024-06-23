@@ -1,0 +1,96 @@
+
+- hosts: all
+  become: true
+
+  vars:
+    mod_user: "{{ lookup('env', 'AUTH_USER_NAME') }}"
+    openai_api_key: "{{ lookup('env', 'OPENAI_API_KEY') }}"
+    allowed_origins: #azure webapp のドメイン
+    cert: "/etc/ssl/certs/sample.pem"
+    key_file: "/etc/ssl/private/sample-key.pem"
+    local_domains: "localhost 127.0.0.1 ::1 "
+
+  tasks:
+    - name: Set TMPDIR
+      lineinfile:
+        path: /etc/environment
+        line: 'TMPDIR=/var/tmp'
+        create: yes
+
+    - name: Set domain names including public IP
+      set_fact:
+        domain_names: "{{ local_domains }} {{ ansible_default_ipv4.address }}"
+
+#    - name: Install certbot-nginx and nginx
+#      yum:
+#        name:
+#          - certbot-nginx
+#          - nginx
+#       state: present
+
+    - name: Install mkcert
+      block:
+        - name: Install mkcert via wget
+          command: wget -O /usr/local/bin/mkcert https://github.com/FiloSottile/mkcert/releases/download/v1.4.3/mkcert-v1.4.3-linux-amd64
+          args:
+            creates: /usr/local/bin/mkcert
+
+        - name: Set executable permissions on mkcert
+          file:
+            path: /usr/local/bin/mkcert
+            mode: '0755'
+
+        - name: Install mkcert
+          command: mkcert -install
+          args:
+            creates: /root/.local/share/mkcert/rootCA.pem
+
+        - name: Generate local certificates for Nginx
+          command: "mkcert -cert-file {{ cert_file }} -key-file {{ key_file }} {{ domain_names }}"
+          args:
+            creates: "{{ cert_file }}"
+
+    - name: Install Docke
+      yum:
+        name: docker
+        state: present
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add user to docker group
+      user:
+        name: "{{mod_user}}"
+        groups: docker
+        append: yes
+
+
+    - name: Install Docker Compose
+      block:
+        - name: Set Docker config directory
+          set_fact:
+            docker_config_dir: "{{ ansible_env.HOME }}/.docker"
+
+        - name: Create Docker CLI plugins directory
+          file:
+            path: "{{ docker_config_dir }}/cli-plugins"
+            state: directory
+            mode: '0755'
+
+        - name: Download Docker Compose
+          get_url:
+            url: https://github.com/docker/compose/releases/download/v2.4.1/docker-compose-linux-x86_64
+            dest: "{{ docker_config_dir }}/cli-plugins/docker-compose"
+            mode: '0755'
+
+    - name: Set environment variables
+      lineinfile:
+        path: /etc/environment
+        line: "{{ item }}"
+        create: yes
+      with_items:
+        - "OPENAI_API_KEY={{ openai_api_key }}"
+        - "ALLOWED_ORIGINS={{ allowed_origins }}"
