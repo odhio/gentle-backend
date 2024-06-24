@@ -24,6 +24,13 @@ services:
     container_name: gentle-api
     env_file:
       - ./.env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - OPENAI_AZURE_ENDPOINT=${OPENAI_AZURE_ENDPOINT}
+      - AZURE_OPENAI_MODEL=${AZURE_OPENAI_MODEL}
+      
     ports:
       - 8000:8000
     volumes:

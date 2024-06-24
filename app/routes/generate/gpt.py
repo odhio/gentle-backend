@@ -2,10 +2,17 @@ from typing import Literal
 from pydantic import BaseModel
 from schema import APIBaseModel
 
-from openai import AsyncOpenAI
+from openai import AsyncAzureOpenAI
+import os
 
-openai_client = AsyncOpenAI()
+version = os.environ.get("AZURE_OPENAI_PREVIEW_API_VERSION", "2024-03-01-preview")
+model = os.environ.get("AZURE_OPENAI_MODEL")
 
+openai_client = AsyncAzureOpenAI(
+    api_version=version,
+    api_key=os.environ.get("OPENAI_API_KEY"),
+    azure_endpoint=os.environ.get("OPENAI_AZURE_ENDPOINT")
+    )
 
 class Message(BaseModel):
     role: Literal["user", "assistant"]
@@ -30,7 +37,7 @@ async def handler(req: GenerateRequest) -> str:
             _messages.append(message.dict())
 
     res = await openai_client.chat.completions.create(
-        model="gpt-3.5-turbo-0125",
+        model=model,
         messages=_messages,
         temperature=0.7,
         top_p=1.0,

@@ -11,9 +11,9 @@ class GenerateResponse(BaseModel):
 
 
 @router.post("/", response_model=gpt.GenerateResponse)
-def _generate(req: gpt.GenerateRequest):
+async def _generate(req: gpt.GenerateRequest):
     try:
-        return gpt.handler(req)
+        return await gpt.handler(req)
     except Exception as e:
         print(traceback.format_exc())
         print(e)

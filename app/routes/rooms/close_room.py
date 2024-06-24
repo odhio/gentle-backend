@@ -10,14 +10,21 @@ from domains import Emotion
 
 from lib.analytics import create_tfidf_matrix
 
-from openai import AsyncOpenAI
+from openai import AsyncAzureOpenAI
 import dotenv
 import os
 import logging
 
 dotenv.load_dotenv()
-openai_model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo-0125")
-openai_client = AsyncOpenAI()
+
+version = os.environ.get("AZURE_OPENAI_PREVIEW_API_VERSION", "2024-03-01-preview")
+model = os.environ.get("AZURE_OPENAI_MODEL")
+
+openai_client = AsyncAzureOpenAI(
+    api_version=version,
+    api_key=os.environ.get("OPENAI_API_KEY"),
+    azure_endpoint=os.environ.get("OPENAI_AZURE_ENDPOINT")
+    )
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -76,7 +83,7 @@ async def handler(room_uuid: str):
             ]
             try:
                 member_res = await openai_client.chat.completions.create(
-                    model=openai_model,
+                    model=model,
                     messages=member_messages,
                     temperature=0.7,
                     top_p=1.0,
@@ -114,7 +121,7 @@ async def handler(room_uuid: str):
 
         try:
             room_res = await openai_client.chat.completions.create(
-                model=openai_model,
+                model=model,
                 messages=room_messages,
                 temperature=0.7,
                 top_p=1.0,
